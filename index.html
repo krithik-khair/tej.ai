@@ -913,17 +913,40 @@
             typingIndicator.classList.remove('active');
         }
 
-        // Check for general conversation
-        function checkGeneralConversation(message) {
-            const lowerMessage = message.toLowerCase().trim();
+        // Check for general conversation without clashing with words like "Shiva"
+function checkGeneralConversation(message) {
+    const lowerMessage = message.toLowerCase().trim();
 
-            for (const [key, responses] of Object.entries(GENERAL_RESPONSES)) {
-                if (lowerMessage.includes(key)) {
-                    return { answer: responses[Math.floor(Math.random() * responses.length)], source: null };
-                }
+    // Turn message into clean word list
+    const words = lowerMessage
+        .replace(/[^a-z0-9\s]/g, " ")   // remove punctuation etc
+        .split(/\s+/)
+        .filter(Boolean);
+
+    for (const [key, responses] of Object.entries(GENERAL_RESPONSES)) {
+        const keyWords = key.split(/\s+/);
+        let match = false;
+
+        if (keyWords.length === 1) {
+            // Single-word keys like "hi", "hello" must match as a whole word
+            match = words.includes(key);
+        } else {
+            // Multi-word keys like "how are you", "what can you do"
+            // can match as a phrase
+            if (lowerMessage.includes(key)) {
+                match = true;
             }
+        }
 
-            return null;
+        if (match) {
+            return {
+                answer: responses[Math.floor(Math.random() * responses.length)],
+                source: null
+            };
+        }
+    }
+
+    return null;
         }
 
         // Load knowledge base
